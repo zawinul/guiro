@@ -1,0 +1,139 @@
+function statemanager(cfg) {
+	let actions = [];
+	let acceptors = [];
+	let reactors = [];
+	let naps = [];
+	let model = {};
+	let representer = model=>JSON.parse(JSON.stringify(model));
+	let render = representation=>console.log({render:representation});
+
+	function setModel(m) {
+		model = m;
+	}
+
+
+	function setRepresenter(r) {
+		representer = r;
+	}
+
+	function addAction(act) {
+		actions.push(act);
+	}
+
+	function addAcceptor(acc) {
+		acceptors.push(acc);
+	}
+	
+	function addReactor(r) {
+		reactors.push(r);
+	}
+
+	function addNap(nap) {
+		naps.push(nap);
+	}
+
+	
+	function _presentAct(act) {
+		for(let acc of acceptors) {
+			try {
+				acc(act, model);
+			} catch(e) {
+				consoler.log({_presentError:e})
+			}
+		}
+	}
+
+	function _react(representation) {
+		for(let r of reactors) {
+			try {
+				r(representation);
+			}catch(e) {
+				console.log({_reactError:e})
+			}
+		}
+	}
+
+	function _present() {
+		while(actions.length>0) {
+			let act = actions.splice(0,1)[0];
+			_presentAct(act);
+		}
+	}
+
+	function _execNaps(representation) {
+		let ret = false;
+		for(let nap of naps) {
+			try {
+				if (nap(representation)===true)
+					ret = true;
+			}
+			catch(e) {
+				console.log({_napsError:e});
+			}
+		}
+		return ret;
+	}
+
+	function _step() {
+		if (!actions || actions.length==0)
+			return;
+
+		var noRender = true;
+
+		try {
+			while(actions.length>0) {
+				_present();
+				let representation = representer(model);
+				_react(representation);
+				noRender = _execNaps(representation);
+			}
+			if (!noRender)
+				render(representation);
+		}
+		catch(e){
+			console.log({_steperror:e});
+			console.trace();
+		}
+
+	}
+
+	function loop() {
+		try {
+			var noRender = true;
+			let representation = null;
+			while(actions.length>0) {
+				_present();
+				representation = representer(model);
+				_react(representation);
+				noRender = _execNaps(representation);
+			}
+			if (!noRender && representation!=null)
+				render(representation);
+		}
+		catch(e){
+			console.log({looperror:e});
+			console.trace();
+		}
+		setTimeout(loop,2);
+	}
+	loop();
+
+	function init(cfg) {
+		acceptors = cfg.acceptors || [];
+		reactors = cfg.reactors || [];
+		naps = cfg.naps || [];
+		model = cfg.model || {};
+		representer = cfg.representer || defaultRepresenter;
+		return {
+			setModel,
+			setRepresenter,
+			addNap,
+			addAction,
+			addReactor,
+			addAcceptor
+
+		}
+	}
+
+	return init(cfg);
+}

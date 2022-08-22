@@ -207,7 +207,7 @@ function _selectSub(mapnum) {
 	adjustMap();
 }
 
-let tags = 'zoom,dist,dx,dy,rot,par1,par2,par3,par4,par5,par6,par7,par8,par9,par10,par11,par12,par3,par14,par15,par16'.split(',');
+var tags = 'zoom,dist,dx,dy,rot,par1,par2,par3,par4,par5,par6,par7,par8,par9,par10,par11,par12,par3,par14,par15,par16'.split(',');
 function initMapDescriptors() {
 	let desc;
 	for(var i=0; i<16; i++) {
@@ -409,38 +409,6 @@ function onDspChange() {
 }
 
 
-var lpx, lpy;
-function debugfilt() {
-	lpx = value.lp2();
-	lpy = value.lp2();
-	var x=0,y=0,fx=0,fy=0;
-	var w = window.innerWidth, h=window.innerHeight;
-	var c=$('<div>x</>').appendTo('body').css({
-		width:10,height:10,
-		position:'absolute',
-		zIndex:9999,
-		color:'black',
-		backgroundColor:'yellow',
-		padding:1
-	});
-	function update() {
-		fx=lpx.process(x);
-		fy=lpy.process(y);
-		c.css({top:fy+'px', left:fx+'px'});
-		c.text(""+Math.floor(10*Math.random()));
-		setTimeout(update,1);
-	}
-	update();
-	function change() {
-		x=Math.random()*w;
-		y=Math.random()*h;
-		setTimeout(change, 2000*(.5+Math.random()));
-		//console.log({x,y});
-	}
-	change();
-}
-
-//setTimeout(debugfilt,3000);
 function monitor() {
 	function single() {
 		todsp({status:1});
